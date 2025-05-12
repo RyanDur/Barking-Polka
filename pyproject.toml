@@ -1,0 +1,19 @@
+[project]
+name = "fastapiproject"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi==0.115.12",
+    "sse-starlette>=2.3.4",
+    "uvicorn==0.34.2",
+]
+
+[dependency-groups]
+dev = [
+    "faker>=37.1.0",
+    "httpx>=0.28.1",
+    "mypy==1.15.0",
+    "pytest==8.3.5",
+    "ruff==0.11.9",
+]

@@ -1,0 +1,46 @@
+import {type FC, useContext, useEffect, useState} from "react";
+import {AppContext} from '../../AppContext';
+import type {MessageEvent} from "./MessageEvent";
+
+
+export const Chat: FC = () => {
+  const {env} = useContext(AppContext);
+  const [messageEvents, updateMessageEvents] = useState<MessageEvent[]>([]);
+
+  useEffect(() => {
+    const chatEventSource = new EventSource(`${env?.serverHost}/api/events`);
+
+    chatEventSource.addEventListener('chat', event => {
+      const messageEvent = JSON.parse(event.data);
+
+      if (messageEvent) {
+        const {id, voice, message} = messageEvent;
+
+        updateMessageEvents((current: MessageEvent[]) => {
+          const lastMessageEvent: MessageEvent = current[current.length - 1];
+          if (lastMessageEvent?.voice === voice) {
+            current.pop();
+            return [...current, {id, voice, message: lastMessageEvent.message + message}];
+          } else return [...current, {id, voice, message}];
+        });
+
+      } else {
+        updateMessageEvents([{id: '-1', voice: 'server', message: `Wrong format from backend: ${event.data}`}]);
+      }
+    });
+
+    chatEventSource.addEventListener('error', (err) => {
+      chatEventSource.close();
+      updateMessageEvents((current: MessageEvent[]) => {
+        return [...current, {id: '-1', voice: 'error', message: err.type}];
+      });
+    })
+  }, [env?.serverHost])
+
+  return <ul>
+    {messageEvents.map(({id, voice, message}) =>
+      <li key={id}>
+        <label>{voice}:<input type="text" readOnly={true} value={message}/></label>
+      </li>)}
+  </ul>
+}
