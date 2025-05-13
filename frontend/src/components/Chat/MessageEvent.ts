@@ -1,4 +1,5 @@
-import schema, {type Decoder} from 'schemawax';
+import type {Decoder} from "schemawax";
+import * as schema from 'schemawax';
 
 export type MessageEvent = {
   voice: string,
