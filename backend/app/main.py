@@ -3,7 +3,7 @@ import time
 from dataclasses import dataclass
 
 from faker import Faker
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request
 from starlette.responses import StreamingResponse
 
 app = FastAPI()
@@ -21,10 +21,10 @@ class ServerEvent:
         return f"event:{self.event}\ndata:{self.data}\n\n"
 
 
-async def data_generator():
+async def data_generator(request: Request):
     fake = Faker()
     next_id = 0
-    while True:
+    while not await request.is_disconnected():
         yield str(ServerEvent(event="chat", data=json.dumps({
             "voice": fake.random_element(["friend 1", "friend 2"]),
             "message": f"{fake.sentence()}",
@@ -35,8 +35,8 @@ async def data_generator():
 
 
 @router.get("/events")
-async def events():
-    return StreamingResponse(data_generator(), headers={
+async def events(request: Request):
+    return StreamingResponse(data_generator(request), headers={
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         "Access-Control-Allow-Origin": "*"
