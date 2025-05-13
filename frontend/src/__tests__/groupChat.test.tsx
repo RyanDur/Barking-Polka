@@ -37,7 +37,7 @@ describe('group chat', () => {
   });
 
   test('when receiving data in the wrong format', async () => {
-    const badlyFormedMessageEvent = {wrong: 'friend 1', form: 'hello,', id: '1'};
+    const badlyFormedMessageEvent = {wrong: 'friend 1', format: 'hello,'};
     server.stubEventStream('/api/events', 'chat', [badlyFormedMessageEvent])
 
     render(<App env={{serverHost: server.url()}}/>);

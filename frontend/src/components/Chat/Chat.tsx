@@ -1,7 +1,6 @@
 import {type FC, useContext, useEffect, useState} from "react";
 import {AppContext} from '../../AppContext';
-import type {MessageEvent} from "./MessageEvent";
-
+import {type MessageEvent, messageEventSchema} from "./MessageEvent";
 
 export const Chat: FC = () => {
   const {env} = useContext(AppContext);
@@ -11,7 +10,7 @@ export const Chat: FC = () => {
     const chatEventSource = new EventSource(`${env?.serverHost}/api/events`);
 
     chatEventSource.addEventListener('chat', event => {
-      const messageEvent = JSON.parse(event.data);
+      const messageEvent = messageEventSchema.decode(JSON.parse(event.data));
 
       if (messageEvent) {
         const {id, voice, message} = messageEvent;
@@ -19,8 +18,7 @@ export const Chat: FC = () => {
         updateMessageEvents((current: MessageEvent[]) => {
           const lastMessageEvent: MessageEvent = current[current.length - 1];
           if (lastMessageEvent?.voice === voice) {
-            current.pop();
-            return [...current, {id, voice, message: lastMessageEvent.message + message}];
+            return [...current.slice(0, -1), {id, voice, message: lastMessageEvent.message + message}];
           } else return [...current, {id, voice, message}];
         });
 
@@ -28,13 +26,6 @@ export const Chat: FC = () => {
         updateMessageEvents([{id: '-1', voice: 'server', message: `Wrong format from backend: ${event.data}`}]);
       }
     });
-
-    chatEventSource.addEventListener('error', (err) => {
-      chatEventSource.close();
-      updateMessageEvents((current: MessageEvent[]) => {
-        return [...current, {id: '-1', voice: 'error', message: err.type}];
-      });
-    })
   }, [env?.serverHost])
 
   return <ul>
