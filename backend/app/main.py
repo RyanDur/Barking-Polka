@@ -1,9 +1,11 @@
 import json
 import time
+import uuid
 from dataclasses import dataclass
 
 from faker import Faker
 from fastapi import FastAPI, APIRouter, Request
+from mypy.util import json_dumps
 from starlette.responses import StreamingResponse
 
 app = FastAPI()
@@ -12,10 +14,19 @@ router = APIRouter()
 
 
 @dataclass
+class Message:
+    voice: str
+    message: str
+    id: str
+
+    def __str__(self):
+        return json.dumps({"voice": self.voice, "message": self.message, "id": self.id})
+
+
+@dataclass
 class ServerEvent:
     event: str
-    data: str
-    retry: int = 0
+    data: Message
 
     def __str__(self):
         return f"event:{self.event}\ndata:{self.data}\n\n"
@@ -25,11 +36,11 @@ async def data_generator(request: Request):
     fake = Faker()
     next_id = 0
     while not await request.is_disconnected():
-        yield str(ServerEvent(event="chat", data=json.dumps({
-            "voice": fake.random_element(["friend 1", "friend 2"]),
-            "message": f"{fake.sentence()}",
-            "id": next_id,
-        })))
+        yield str(ServerEvent(event="chat", data=Message(
+            voice=fake.random_element(["friend 1", "friend 2"]),
+            message=fake.sentence(),
+            id=uuid.uuid4().hex,
+        )))
         time.sleep(1)
         next_id += 1
 
