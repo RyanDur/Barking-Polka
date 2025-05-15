@@ -1,4 +1,5 @@
 import unittest
+import uuid
 from typing import List
 from unittest.mock import patch
 
@@ -18,8 +19,8 @@ async def collect_events_data(response) -> List[str]:
 
 class TestChatEvents(unittest.IsolatedAsyncioTestCase):
 
-    @patch('time.sleep', return_value=0)
-    async def test_chat_events(self, mock_time):
+    @patch('uuid.uuid4', return_value=uuid.UUID('123e4567-e89b-12d3-a456-426614174000'))
+    async def test_chat_events(self, uuid_mock):
         Faker.seed(0)
         client = TestClient(app)
 
@@ -28,7 +29,8 @@ class TestChatEvents(unittest.IsolatedAsyncioTestCase):
         line = await anext(response.iter_content(None))
         self.assertEqual(
             line,
-            b'event:chat\ndata:{"voice": "friend 2", "message": "American whole magazine truth stop whose.", "id": 0}\n\n'
+            b'event:chat\ndata:{"voice": "friend 2", "message": "American whole magazine truth stop whose.", "id": "123e4567e89b12d3a456426614174000"}\n\n'
         )
         response.close()
         self.assertEqual(response.status_code, 200)
+        uuid_mock.assert_called_once()
