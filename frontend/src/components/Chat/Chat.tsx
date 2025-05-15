@@ -26,6 +26,7 @@ export const Chat: FC = () => {
         updateMessageEvents([{id: '-1', voice: 'server', message: `Wrong format from backend: ${event.data}`}]);
       }
     });
+    return () => chatEventSource.close();
   }, [env?.serverHost])
 
   return <ul>
