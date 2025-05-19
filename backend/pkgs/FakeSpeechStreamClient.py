@@ -1,17 +1,15 @@
-from typing import Generator
+from typing import Generator, List
 
 import azure.cognitiveservices.speech as speech_sdk
 from azure.cognitiveservices.speech import SpeechConfig
-from faker import Faker
 
 
 class FakeSpeechStreamClient:
-    def __init__(self, config: SpeechConfig):
-        self.__fake = Faker()
+    def __init__(self, config: SpeechConfig, text: List[str]):
+        self.__text = text
         self.__synth = speech_sdk.speech.SpeechSynthesizer(speech_config=config, audio_config=None)
 
     def speach_stream(self) -> Generator[bytes, None, None]:
-        for i in range(10):
-            sentence = self.__fake.sentence()
-            result = self.__synth.speak_text_async(sentence).get()
+        for line in self.__text:
+            result = self.__synth.speak_text_async(line).get()
             yield result.audio_data

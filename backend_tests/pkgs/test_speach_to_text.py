@@ -14,13 +14,14 @@ speech_endpoint = f"https://{os.environ.get('SPEECH_REGION')}.api.cognitive.micr
 class TestSpeechToText(unittest.TestCase):
     def test_speech_to_text(self):
         Faker.seed(0)
+        text = ["hello", "how are you", "I am fine", "thank you", "goodbye"]
         speech_config = speech_sdk.SpeechConfig(subscription=speech_key, endpoint=speech_endpoint)
         speach_to_text = SpeechToText(
-            speech_client=FakeSpeechStreamClient(speech_config),
+            speech_client=FakeSpeechStreamClient(speech_config, text),
             text_client=AzureTextClient(speech_config)
         )
 
         text = speach_to_text.conversation_stream()
 
-        expected_text = "Serious inside else memory IF6 whose group through despite cause sense peace economy travel total financial role together range line beyond its policy daughter need kindness artist truth trouble rest human station property partner stock 4 region as true develop sound central language ball floor meet usually board necessary.Natural sport music White."
+        expected_text = "Hello. How are you? I am fine. Thank you. Goodbye."
         self.assertEqual(expected_text, text)
