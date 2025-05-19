@@ -1,19 +1,17 @@
 import os
 import unittest
 
-from faker import Faker
+import azure.cognitiveservices.speech as speech_sdk
 
 from backend.pkgs.AzureTextClient import AzureTextClient
 from backend.pkgs.FakeSpeechStreamClient import FakeSpeechStreamClient
 from backend.pkgs.speach_to_text import SpeechToText
 
-import azure.cognitiveservices.speech as speech_sdk
 speech_key =  os.environ.get('SPEECH_KEY')
 speech_endpoint = f"https://{os.environ.get('SPEECH_REGION')}.api.cognitive.microsoft.com"
 
 class TestSpeechToText(unittest.TestCase):
     def test_speech_to_text(self):
-        Faker.seed(0)
         text = ["hello", "how are you", "I am fine", "thank you", "goodbye"]
         speech_config = speech_sdk.SpeechConfig(subscription=speech_key, endpoint=speech_endpoint)
         speach_to_text = SpeechToText(
