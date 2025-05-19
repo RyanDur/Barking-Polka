@@ -5,23 +5,22 @@ import azure.cognitiveservices.speech as speechsdk
 
 speech_key = os.environ.get('SPEECH_KEY')
 region = os.environ.get('SPEECH_REGION')
-speech_endpoint="https://eastus.api.cognitive.microsoft.com"
+speech_endpoint = f"https://{region}.api.cognitive.microsoft.com"
 filename = "output_16kHz_mono.wav"
 
-def speech_recognition():
-    speech_config = speechsdk.SpeechConfig(subscription=speech_key, endpoint=speech_endpoint)
 
+def speech_recognition():
     channels = 1
     bits_per_sample = 16
     samples_per_second = 16000
 
+    speech_config = speechsdk.SpeechConfig(subscription=speech_key, endpoint=speech_endpoint)
     synth = speechsdk.speech.SpeechSynthesizer(speech_config=speech_config, audio_config=None)
-
 
     # Create audio configuration using the push stream
     wave_format = speechsdk.audio.AudioStreamFormat(samples_per_second, bits_per_sample, channels)
-    stream = speechsdk.audio.PushAudioInputStream(stream_format=wave_format)
-    audio_config = speechsdk.audio.AudioConfig(stream=stream)
+    push_stream = speechsdk.audio.PushAudioInputStream(stream_format=wave_format)
+    audio_config = speechsdk.audio.AudioConfig(stream=push_stream)
 
     transcriber = speechsdk.transcription.ConversationTranscriber(speech_config, audio_config)
 
@@ -51,13 +50,13 @@ def speech_recognition():
         print(line)
         foo = synth.speak_text_async(line)
         result = foo.get()
-        stream.write(result.audio_data)
+        push_stream.write(result.audio_data)
 
-    stream.close()
-    stream.close()
+    push_stream.close()
     while not done:
         time.sleep(.5)
 
     transcriber.stop_transcribing_async()
+
 
 speech_recognition()

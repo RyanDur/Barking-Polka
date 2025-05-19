@@ -1,19 +1,14 @@
-import os
-import time
 from typing import Generator
 
 import azure.cognitiveservices.speech as speech_sdk
+from azure.cognitiveservices.speech import SpeechConfig
 from faker import Faker
 
-speech_region = os.environ.get('SPEECH_REGION')
-speech_key = os.environ.get('SPEECH_KEY')
-speech_endpoint = f"https://{speech_region}.api.cognitive.microsoft.com"
 
 class FakeSpeechStreamClient:
-    def __init__(self):
+    def __init__(self, config: SpeechConfig):
         self.__fake = Faker()
-        speech_config = speech_sdk.SpeechConfig(subscription=speech_key, endpoint=speech_endpoint)
-        self.__synth = speech_sdk.speech.SpeechSynthesizer(speech_config=speech_config, audio_config=None)
+        self.__synth = speech_sdk.speech.SpeechSynthesizer(speech_config=config, audio_config=None)
 
     def speach_stream(self) -> Generator[bytes, None, None]:
         for i in range(10):
